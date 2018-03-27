@@ -1,0 +1,22 @@
+syntax = "proto3";
+package service.user;
+option go_package = "github.com/mzmico/user-service/protobuf";
+
+
+import "mzmico/protobuf/session.proto";
+
+message LoginRequest {
+    mzmico.protobuf.Session session = 1;
+    string account = 2;
+    string certificate = 3;
+}
+
+message LoginResponse {
+    string uid = 1;
+    string token = 2;
+
+}
+
+service user {
+    rpc Login(LoginRequest) returns (LoginResponse) {};
+}
