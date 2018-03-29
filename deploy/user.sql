@@ -1,0 +1,9 @@
+CREATE DATABASE IF NOT EXISTS db_user DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE db_user;
+CREATE TABLE tb_account (
+  app_id VARCHAR(32) NOT NULL,
+  uid VARCHAR(32) NOT NULL,
+  certificate VARCHAR(256) NOT NULL,
+  type INT NOT NULL ,
+  PRIMARY KEY (app_id,uid)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4;

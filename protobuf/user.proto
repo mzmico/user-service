@@ -4,19 +4,91 @@ option go_package = "github.com/mzmico/user-service/protobuf";
 
 
 import "mzmico/protobuf/session.proto";
+import "google/protobuf/duration.proto";
+
+enum AccountType {
+    ACCOUNT_TYPE_SMS = 0;
+    ACCOUNT_TYPE_WECHAT_JSCODE = 1;
+}
+
+enum LoginStatus {
+    LOGIN_STATUS_OK = 0;
+    LOGIN_STATUS_PASSOWRD_ERROR = 1;
+    LOGIN_STATUS_NOT_EXISTS = 2;
+}
 
 message LoginRequest {
     mzmico.protobuf.Session session = 1;
-    string account = 2;
-    string certificate = 3;
+    string app_id = 2;
+    string account = 3;
+    string certificate = 4;
+    AccountType type = 5;
 }
 
 message LoginResponse {
     string uid = 1;
     string token = 2;
+    LoginStatus status = 3;
+}
+
+
+enum VerificationCodeType {
+    VERIFICATION_CODE_TYPE_SMS = 0;
+}
+
+enum VerificationCodeState {
+    VERIFICATION_CODE_STATE_FAIL = 0;
+    VERIFICATION_CODE_STATE_CREATE = 1;
+    VERIFICATION_CODE_STATE_EXISTS = 2;
+}
+
+
+message VerificationCodeRequest {
+    string app_id = 1;
+    mzmico.protobuf.Session session = 2;
+    string account = 3;
+    google.protobuf.Duration timeout = 4;
+    bool create = 5;
+    VerificationCodeType type = 6;
+}
+
+message VerificationCodeResponse {
+    string code = 1;
+    VerificationCodeState state =2;
 
 }
 
-service user {
+message UserInfo {
+
+}
+
+message CreateUserRequest {
+    string app_id = 1;
+    mzmico.protobuf.Session session = 2;
+    string name = 4;
+    string nick = 5;
+    string avatar = 6;
+    string language = 7;
+    map<string,string> extend = 8;
+}
+
+message CreateUserResponse {
+    string uid = 1;
+}
+
+message BindAccountRequest {
+    string app_id = 1;
+    mzmico.protobuf.Session session = 2;
+    string uid = 3;
+    string account = 4;
+    string certificate = 5;
+    AccountType type = 6;
+}
+
+service User {
     rpc Login(LoginRequest) returns (LoginResponse) {};
+    rpc VerificationCode(VerificationCodeRequest) returns (VerificationCodeResponse) {};
+
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {};
+
 }

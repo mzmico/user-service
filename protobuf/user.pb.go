@@ -10,6 +10,12 @@ It is generated from these files:
 It has these top-level messages:
 	LoginRequest
 	LoginResponse
+	VerificationCodeRequest
+	VerificationCodeResponse
+	UserInfo
+	CreateUserRequest
+	CreateUserResponse
+	BindAccountRequest
 */
 package protobuf
 
@@ -17,6 +23,7 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 import mzmico_protobuf "github.com/mzmico/protobuf"
+import google_protobuf "github.com/golang/protobuf/ptypes/duration"
 
 import (
 	context "golang.org/x/net/context"
@@ -34,10 +41,99 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+type AccountType int32
+
+const (
+	AccountType_ACCOUNT_TYPE_SMS           AccountType = 0
+	AccountType_ACCOUNT_TYPE_WECHAT_JSCODE AccountType = 1
+)
+
+var AccountType_name = map[int32]string{
+	0: "ACCOUNT_TYPE_SMS",
+	1: "ACCOUNT_TYPE_WECHAT_JSCODE",
+}
+var AccountType_value = map[string]int32{
+	"ACCOUNT_TYPE_SMS":           0,
+	"ACCOUNT_TYPE_WECHAT_JSCODE": 1,
+}
+
+func (x AccountType) String() string {
+	return proto.EnumName(AccountType_name, int32(x))
+}
+func (AccountType) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+type LoginStatus int32
+
+const (
+	LoginStatus_LOGIN_STATUS_OK             LoginStatus = 0
+	LoginStatus_LOGIN_STATUS_PASSOWRD_ERROR LoginStatus = 1
+	LoginStatus_LOGIN_STATUS_NOT_EXISTS     LoginStatus = 2
+)
+
+var LoginStatus_name = map[int32]string{
+	0: "LOGIN_STATUS_OK",
+	1: "LOGIN_STATUS_PASSOWRD_ERROR",
+	2: "LOGIN_STATUS_NOT_EXISTS",
+}
+var LoginStatus_value = map[string]int32{
+	"LOGIN_STATUS_OK":             0,
+	"LOGIN_STATUS_PASSOWRD_ERROR": 1,
+	"LOGIN_STATUS_NOT_EXISTS":     2,
+}
+
+func (x LoginStatus) String() string {
+	return proto.EnumName(LoginStatus_name, int32(x))
+}
+func (LoginStatus) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+type VerificationCodeType int32
+
+const (
+	VerificationCodeType_VERIFICATION_CODE_TYPE_SMS VerificationCodeType = 0
+)
+
+var VerificationCodeType_name = map[int32]string{
+	0: "VERIFICATION_CODE_TYPE_SMS",
+}
+var VerificationCodeType_value = map[string]int32{
+	"VERIFICATION_CODE_TYPE_SMS": 0,
+}
+
+func (x VerificationCodeType) String() string {
+	return proto.EnumName(VerificationCodeType_name, int32(x))
+}
+func (VerificationCodeType) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+
+type VerificationCodeState int32
+
+const (
+	VerificationCodeState_VERIFICATION_CODE_STATE_FAIL   VerificationCodeState = 0
+	VerificationCodeState_VERIFICATION_CODE_STATE_CREATE VerificationCodeState = 1
+	VerificationCodeState_VERIFICATION_CODE_STATE_EXISTS VerificationCodeState = 2
+)
+
+var VerificationCodeState_name = map[int32]string{
+	0: "VERIFICATION_CODE_STATE_FAIL",
+	1: "VERIFICATION_CODE_STATE_CREATE",
+	2: "VERIFICATION_CODE_STATE_EXISTS",
+}
+var VerificationCodeState_value = map[string]int32{
+	"VERIFICATION_CODE_STATE_FAIL":   0,
+	"VERIFICATION_CODE_STATE_CREATE": 1,
+	"VERIFICATION_CODE_STATE_EXISTS": 2,
+}
+
+func (x VerificationCodeState) String() string {
+	return proto.EnumName(VerificationCodeState_name, int32(x))
+}
+func (VerificationCodeState) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
 type LoginRequest struct {
 	Session     *mzmico_protobuf.Session `protobuf:"bytes,1,opt,name=session" json:"session,omitempty"`
-	Account     string                   `protobuf:"bytes,2,opt,name=account" json:"account,omitempty"`
-	Certificate string                   `protobuf:"bytes,3,opt,name=certificate" json:"certificate,omitempty"`
+	AppId       string                   `protobuf:"bytes,2,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	Account     string                   `protobuf:"bytes,3,opt,name=account" json:"account,omitempty"`
+	Certificate string                   `protobuf:"bytes,4,opt,name=certificate" json:"certificate,omitempty"`
+	Type        AccountType              `protobuf:"varint,5,opt,name=type,enum=service.user.AccountType" json:"type,omitempty"`
 }
 
 func (m *LoginRequest) Reset()                    { *m = LoginRequest{} }
@@ -50,6 +146,13 @@ func (m *LoginRequest) GetSession() *mzmico_protobuf.Session {
 		return m.Session
 	}
 	return nil
+}
+
+func (m *LoginRequest) GetAppId() string {
+	if m != nil {
+		return m.AppId
+	}
+	return ""
 }
 
 func (m *LoginRequest) GetAccount() string {
@@ -66,9 +169,17 @@ func (m *LoginRequest) GetCertificate() string {
 	return ""
 }
 
+func (m *LoginRequest) GetType() AccountType {
+	if m != nil {
+		return m.Type
+	}
+	return AccountType_ACCOUNT_TYPE_SMS
+}
+
 type LoginResponse struct {
-	Uid   string `protobuf:"bytes,1,opt,name=uid" json:"uid,omitempty"`
-	Token string `protobuf:"bytes,2,opt,name=token" json:"token,omitempty"`
+	Uid    string      `protobuf:"bytes,1,opt,name=uid" json:"uid,omitempty"`
+	Token  string      `protobuf:"bytes,2,opt,name=token" json:"token,omitempty"`
+	Status LoginStatus `protobuf:"varint,3,opt,name=status,enum=service.user.LoginStatus" json:"status,omitempty"`
 }
 
 func (m *LoginResponse) Reset()                    { *m = LoginResponse{} }
@@ -90,9 +201,250 @@ func (m *LoginResponse) GetToken() string {
 	return ""
 }
 
+func (m *LoginResponse) GetStatus() LoginStatus {
+	if m != nil {
+		return m.Status
+	}
+	return LoginStatus_LOGIN_STATUS_OK
+}
+
+type VerificationCodeRequest struct {
+	AppId   string                    `protobuf:"bytes,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	Session *mzmico_protobuf.Session  `protobuf:"bytes,2,opt,name=session" json:"session,omitempty"`
+	Account string                    `protobuf:"bytes,3,opt,name=account" json:"account,omitempty"`
+	Timeout *google_protobuf.Duration `protobuf:"bytes,4,opt,name=timeout" json:"timeout,omitempty"`
+	Create  bool                      `protobuf:"varint,5,opt,name=create" json:"create,omitempty"`
+	Type    VerificationCodeType      `protobuf:"varint,6,opt,name=type,enum=service.user.VerificationCodeType" json:"type,omitempty"`
+}
+
+func (m *VerificationCodeRequest) Reset()                    { *m = VerificationCodeRequest{} }
+func (m *VerificationCodeRequest) String() string            { return proto.CompactTextString(m) }
+func (*VerificationCodeRequest) ProtoMessage()               {}
+func (*VerificationCodeRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+
+func (m *VerificationCodeRequest) GetAppId() string {
+	if m != nil {
+		return m.AppId
+	}
+	return ""
+}
+
+func (m *VerificationCodeRequest) GetSession() *mzmico_protobuf.Session {
+	if m != nil {
+		return m.Session
+	}
+	return nil
+}
+
+func (m *VerificationCodeRequest) GetAccount() string {
+	if m != nil {
+		return m.Account
+	}
+	return ""
+}
+
+func (m *VerificationCodeRequest) GetTimeout() *google_protobuf.Duration {
+	if m != nil {
+		return m.Timeout
+	}
+	return nil
+}
+
+func (m *VerificationCodeRequest) GetCreate() bool {
+	if m != nil {
+		return m.Create
+	}
+	return false
+}
+
+func (m *VerificationCodeRequest) GetType() VerificationCodeType {
+	if m != nil {
+		return m.Type
+	}
+	return VerificationCodeType_VERIFICATION_CODE_TYPE_SMS
+}
+
+type VerificationCodeResponse struct {
+	Code  string                `protobuf:"bytes,1,opt,name=code" json:"code,omitempty"`
+	State VerificationCodeState `protobuf:"varint,2,opt,name=state,enum=service.user.VerificationCodeState" json:"state,omitempty"`
+}
+
+func (m *VerificationCodeResponse) Reset()                    { *m = VerificationCodeResponse{} }
+func (m *VerificationCodeResponse) String() string            { return proto.CompactTextString(m) }
+func (*VerificationCodeResponse) ProtoMessage()               {}
+func (*VerificationCodeResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
+func (m *VerificationCodeResponse) GetCode() string {
+	if m != nil {
+		return m.Code
+	}
+	return ""
+}
+
+func (m *VerificationCodeResponse) GetState() VerificationCodeState {
+	if m != nil {
+		return m.State
+	}
+	return VerificationCodeState_VERIFICATION_CODE_STATE_FAIL
+}
+
+type UserInfo struct {
+}
+
+func (m *UserInfo) Reset()                    { *m = UserInfo{} }
+func (m *UserInfo) String() string            { return proto.CompactTextString(m) }
+func (*UserInfo) ProtoMessage()               {}
+func (*UserInfo) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+
+type CreateUserRequest struct {
+	AppId    string                   `protobuf:"bytes,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	Session  *mzmico_protobuf.Session `protobuf:"bytes,2,opt,name=session" json:"session,omitempty"`
+	Name     string                   `protobuf:"bytes,4,opt,name=name" json:"name,omitempty"`
+	Nick     string                   `protobuf:"bytes,5,opt,name=nick" json:"nick,omitempty"`
+	Avatar   string                   `protobuf:"bytes,6,opt,name=avatar" json:"avatar,omitempty"`
+	Language string                   `protobuf:"bytes,7,opt,name=language" json:"language,omitempty"`
+	Extend   map[string]string        `protobuf:"bytes,8,rep,name=extend" json:"extend,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+}
+
+func (m *CreateUserRequest) Reset()                    { *m = CreateUserRequest{} }
+func (m *CreateUserRequest) String() string            { return proto.CompactTextString(m) }
+func (*CreateUserRequest) ProtoMessage()               {}
+func (*CreateUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+func (m *CreateUserRequest) GetAppId() string {
+	if m != nil {
+		return m.AppId
+	}
+	return ""
+}
+
+func (m *CreateUserRequest) GetSession() *mzmico_protobuf.Session {
+	if m != nil {
+		return m.Session
+	}
+	return nil
+}
+
+func (m *CreateUserRequest) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *CreateUserRequest) GetNick() string {
+	if m != nil {
+		return m.Nick
+	}
+	return ""
+}
+
+func (m *CreateUserRequest) GetAvatar() string {
+	if m != nil {
+		return m.Avatar
+	}
+	return ""
+}
+
+func (m *CreateUserRequest) GetLanguage() string {
+	if m != nil {
+		return m.Language
+	}
+	return ""
+}
+
+func (m *CreateUserRequest) GetExtend() map[string]string {
+	if m != nil {
+		return m.Extend
+	}
+	return nil
+}
+
+type CreateUserResponse struct {
+	Uid string `protobuf:"bytes,1,opt,name=uid" json:"uid,omitempty"`
+}
+
+func (m *CreateUserResponse) Reset()                    { *m = CreateUserResponse{} }
+func (m *CreateUserResponse) String() string            { return proto.CompactTextString(m) }
+func (*CreateUserResponse) ProtoMessage()               {}
+func (*CreateUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+
+func (m *CreateUserResponse) GetUid() string {
+	if m != nil {
+		return m.Uid
+	}
+	return ""
+}
+
+type BindAccountRequest struct {
+	AppId       string                   `protobuf:"bytes,1,opt,name=app_id,json=appId" json:"app_id,omitempty"`
+	Session     *mzmico_protobuf.Session `protobuf:"bytes,2,opt,name=session" json:"session,omitempty"`
+	Uid         string                   `protobuf:"bytes,3,opt,name=uid" json:"uid,omitempty"`
+	Account     string                   `protobuf:"bytes,4,opt,name=account" json:"account,omitempty"`
+	Certificate string                   `protobuf:"bytes,5,opt,name=certificate" json:"certificate,omitempty"`
+	Type        AccountType              `protobuf:"varint,6,opt,name=type,enum=service.user.AccountType" json:"type,omitempty"`
+}
+
+func (m *BindAccountRequest) Reset()                    { *m = BindAccountRequest{} }
+func (m *BindAccountRequest) String() string            { return proto.CompactTextString(m) }
+func (*BindAccountRequest) ProtoMessage()               {}
+func (*BindAccountRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+
+func (m *BindAccountRequest) GetAppId() string {
+	if m != nil {
+		return m.AppId
+	}
+	return ""
+}
+
+func (m *BindAccountRequest) GetSession() *mzmico_protobuf.Session {
+	if m != nil {
+		return m.Session
+	}
+	return nil
+}
+
+func (m *BindAccountRequest) GetUid() string {
+	if m != nil {
+		return m.Uid
+	}
+	return ""
+}
+
+func (m *BindAccountRequest) GetAccount() string {
+	if m != nil {
+		return m.Account
+	}
+	return ""
+}
+
+func (m *BindAccountRequest) GetCertificate() string {
+	if m != nil {
+		return m.Certificate
+	}
+	return ""
+}
+
+func (m *BindAccountRequest) GetType() AccountType {
+	if m != nil {
+		return m.Type
+	}
+	return AccountType_ACCOUNT_TYPE_SMS
+}
+
 func init() {
 	proto.RegisterType((*LoginRequest)(nil), "service.user.LoginRequest")
 	proto.RegisterType((*LoginResponse)(nil), "service.user.LoginResponse")
+	proto.RegisterType((*VerificationCodeRequest)(nil), "service.user.VerificationCodeRequest")
+	proto.RegisterType((*VerificationCodeResponse)(nil), "service.user.VerificationCodeResponse")
+	proto.RegisterType((*UserInfo)(nil), "service.user.UserInfo")
+	proto.RegisterType((*CreateUserRequest)(nil), "service.user.CreateUserRequest")
+	proto.RegisterType((*CreateUserResponse)(nil), "service.user.CreateUserResponse")
+	proto.RegisterType((*BindAccountRequest)(nil), "service.user.BindAccountRequest")
+	proto.RegisterEnum("service.user.AccountType", AccountType_name, AccountType_value)
+	proto.RegisterEnum("service.user.LoginStatus", LoginStatus_name, LoginStatus_value)
+	proto.RegisterEnum("service.user.VerificationCodeType", VerificationCodeType_name, VerificationCodeType_value)
+	proto.RegisterEnum("service.user.VerificationCodeState", VerificationCodeState_name, VerificationCodeState_value)
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -107,6 +459,8 @@ const _ = grpc.SupportPackageIsVersion4
 
 type UserClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	VerificationCode(ctx context.Context, in *VerificationCodeRequest, opts ...grpc.CallOption) (*VerificationCodeResponse, error)
+	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 }
 
 type userClient struct {
@@ -119,7 +473,25 @@ func NewUserClient(cc *grpc.ClientConn) UserClient {
 
 func (c *userClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
 	out := new(LoginResponse)
-	err := grpc.Invoke(ctx, "/service.user.user/Login", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/service.user.User/Login", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) VerificationCode(ctx context.Context, in *VerificationCodeRequest, opts ...grpc.CallOption) (*VerificationCodeResponse, error) {
+	out := new(VerificationCodeResponse)
+	err := grpc.Invoke(ctx, "/service.user.User/VerificationCode", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error) {
+	out := new(CreateUserResponse)
+	err := grpc.Invoke(ctx, "/service.user.User/CreateUser", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -130,6 +502,8 @@ func (c *userClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.C
 
 type UserServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	VerificationCode(context.Context, *VerificationCodeRequest) (*VerificationCodeResponse, error)
+	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 }
 
 func RegisterUserServer(s *grpc.Server, srv UserServer) {
@@ -146,7 +520,7 @@ func _User_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.user.user/Login",
+		FullMethod: "/service.user.User/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServer).Login(ctx, req.(*LoginRequest))
@@ -154,13 +528,57 @@ func _User_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_VerificationCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerificationCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).VerificationCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.user.User/VerificationCode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).VerificationCode(ctx, req.(*VerificationCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.user.User/CreateUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).CreateUser(ctx, req.(*CreateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _User_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "service.user.user",
+	ServiceName: "service.user.User",
 	HandlerType: (*UserServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Login",
 			Handler:    _User_Login_Handler,
+		},
+		{
+			MethodName: "VerificationCode",
+			Handler:    _User_VerificationCode_Handler,
+		},
+		{
+			MethodName: "CreateUser",
+			Handler:    _User_CreateUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -170,21 +588,57 @@ var _User_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("user.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 245 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x50, 0xb1, 0x4e, 0xc3, 0x30,
-	0x10, 0x25, 0x94, 0x52, 0xf5, 0x5a, 0x24, 0x64, 0x31, 0x58, 0x41, 0x48, 0x51, 0x16, 0xca, 0x80,
-	0x23, 0x85, 0x81, 0xbd, 0x23, 0x62, 0x0a, 0x1b, 0x5b, 0x63, 0xae, 0xc5, 0x42, 0xf1, 0x95, 0x9c,
-	0xcd, 0xc0, 0xc0, 0xb7, 0xa3, 0xd8, 0x0e, 0xca, 0xc0, 0x76, 0x77, 0xef, 0xdd, 0x7b, 0x7a, 0x0f,
-	0xc0, 0x33, 0xf6, 0xea, 0xd8, 0x93, 0x23, 0xb1, 0x66, 0xec, 0xbf, 0x8c, 0x46, 0x35, 0xdc, 0xf2,
-	0x9b, 0xee, 0xbb, 0x33, 0x9a, 0xaa, 0x80, 0xb5, 0x7e, 0x5f, 0x31, 0x32, 0x1b, 0xb2, 0x91, 0x5c,
-	0xfe, 0xc0, 0xfa, 0x99, 0x0e, 0xc6, 0x36, 0xf8, 0xe9, 0x91, 0x9d, 0xa8, 0x61, 0x91, 0x08, 0x32,
-	0x2b, 0xb2, 0xcd, 0xaa, 0x96, 0x2a, 0x0a, 0xa8, 0x51, 0x40, 0xbd, 0x44, 0xbc, 0x19, 0x89, 0x42,
-	0xc2, 0x62, 0xa7, 0x35, 0x79, 0xeb, 0xe4, 0x69, 0x91, 0x6d, 0x96, 0xcd, 0xb8, 0x8a, 0x02, 0x56,
-	0x1a, 0x7b, 0x67, 0xf6, 0x46, 0xef, 0x1c, 0xca, 0x59, 0x40, 0xa7, 0xa7, 0xf2, 0x11, 0x2e, 0x92,
-	0x3f, 0x1f, 0xc9, 0x32, 0x8a, 0x4b, 0x98, 0x79, 0xf3, 0x16, 0xcc, 0x97, 0xcd, 0x30, 0x8a, 0x2b,
-	0x98, 0x3b, 0xfa, 0x40, 0x9b, 0xc4, 0xe3, 0x52, 0x3f, 0xc1, 0xd9, 0x90, 0x4f, 0x6c, 0x61, 0x1e,
-	0x04, 0x44, 0xae, 0xa6, 0xb9, 0xd5, 0x34, 0x55, 0x7e, 0xfd, 0x2f, 0x16, 0x1d, 0xcb, 0x93, 0xed,
-	0xdd, 0xeb, 0xed, 0xc1, 0xb8, 0x77, 0xdf, 0x2a, 0x4d, 0x5d, 0x95, 0x0a, 0x1b, 0x98, 0xf7, 0xe9,
-	0xed, 0xaf, 0xbd, 0xf6, 0x3c, 0x4c, 0x0f, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0xca, 0x3a, 0xff,
-	0xb9, 0x71, 0x01, 0x00, 0x00,
+	// 818 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x95, 0xdd, 0x72, 0xdb, 0x44,
+	0x14, 0xc7, 0x23, 0xc7, 0x76, 0x92, 0xe3, 0x52, 0xc4, 0x92, 0x52, 0x55, 0x81, 0xd4, 0x23, 0x86,
+	0x12, 0xc2, 0x54, 0x19, 0xdc, 0x99, 0x0e, 0xe5, 0x4e, 0x51, 0x54, 0x10, 0x04, 0xab, 0xac, 0x94,
+	0x16, 0xb8, 0x11, 0x8a, 0xb4, 0x31, 0xc2, 0xb1, 0x56, 0x48, 0xab, 0x0c, 0xe6, 0x0e, 0x78, 0x2b,
+	0xae, 0x79, 0x0c, 0x1e, 0xa6, 0xb3, 0x2b, 0xc9, 0x96, 0xeb, 0x8f, 0xf6, 0xa6, 0x77, 0xbb, 0x67,
+	0xff, 0x7b, 0x3e, 0x7e, 0x3a, 0x67, 0x05, 0x50, 0xe4, 0x24, 0xd3, 0xd3, 0x8c, 0x32, 0x8a, 0x6e,
+	0xe5, 0x24, 0xbb, 0x89, 0x43, 0xa2, 0x73, 0x9b, 0xfa, 0xd1, 0xe4, 0xcf, 0x49, 0x1c, 0xd2, 0x13,
+	0x71, 0x76, 0x59, 0x5c, 0x9d, 0xe4, 0x24, 0xcf, 0x63, 0x9a, 0x94, 0x62, 0xf5, 0x70, 0x44, 0xe9,
+	0xe8, 0x9a, 0xcc, 0x8f, 0xa3, 0x22, 0x0b, 0xd8, 0xec, 0x5c, 0xfb, 0x4f, 0x82, 0x5b, 0xe7, 0x74,
+	0x14, 0x27, 0x98, 0xfc, 0x5e, 0x90, 0x9c, 0xa1, 0x01, 0xec, 0x54, 0x1e, 0x14, 0xa9, 0x2f, 0x1d,
+	0xf5, 0x06, 0x8a, 0x5e, 0x46, 0xd0, 0x6b, 0x17, 0xba, 0x5b, 0x9e, 0xe3, 0x5a, 0x88, 0xee, 0x40,
+	0x37, 0x48, 0x53, 0x3f, 0x8e, 0x94, 0x56, 0x5f, 0x3a, 0xda, 0xc3, 0x9d, 0x20, 0x4d, 0xed, 0x08,
+	0x29, 0xb0, 0x13, 0x84, 0x21, 0x2d, 0x12, 0xa6, 0x6c, 0x0b, 0x7b, 0xbd, 0x45, 0x7d, 0xe8, 0x85,
+	0x24, 0x63, 0xf1, 0x55, 0x1c, 0x06, 0x8c, 0x28, 0x6d, 0x71, 0xda, 0x34, 0xa1, 0x87, 0xd0, 0x66,
+	0xd3, 0x94, 0x28, 0x9d, 0xbe, 0x74, 0x74, 0x7b, 0x70, 0x4f, 0x6f, 0xd6, 0xac, 0x1b, 0xa5, 0x1b,
+	0x6f, 0x9a, 0x12, 0x2c, 0x64, 0xda, 0x6f, 0xf0, 0x4e, 0x55, 0x45, 0x9e, 0xd2, 0x24, 0x27, 0x48,
+	0x86, 0xed, 0x22, 0x8e, 0x44, 0x09, 0x7b, 0x98, 0x2f, 0xd1, 0x3e, 0x74, 0x18, 0x1d, 0x93, 0xa4,
+	0xce, 0x51, 0x6c, 0xd0, 0x17, 0xd0, 0xcd, 0x59, 0xc0, 0x8a, 0x5c, 0xa4, 0xb8, 0x14, 0x49, 0x38,
+	0x75, 0x85, 0x00, 0x57, 0x42, 0xed, 0x9f, 0x16, 0xdc, 0x7d, 0x4e, 0xb2, 0x32, 0xd3, 0x98, 0x26,
+	0x26, 0x8d, 0x48, 0x4d, 0x6f, 0x4e, 0x42, 0x6a, 0x92, 0x68, 0x40, 0x6d, 0xbd, 0x29, 0xd4, 0xf5,
+	0xf4, 0x1e, 0xc1, 0x0e, 0x8b, 0x27, 0x84, 0x16, 0x4c, 0x90, 0xeb, 0x0d, 0xee, 0xe9, 0xe5, 0x57,
+	0x9e, 0x7b, 0x3b, 0xab, 0xbe, 0x32, 0xae, 0x95, 0xe8, 0x03, 0xe8, 0x86, 0x19, 0xe1, 0xb4, 0x39,
+	0xd2, 0x5d, 0x5c, 0xed, 0xd0, 0xe3, 0x0a, 0x74, 0x57, 0x94, 0xaf, 0x2d, 0x96, 0xff, 0x6a, 0x99,
+	0x0d, 0xe2, 0x31, 0x28, 0xcb, 0x10, 0x2a, 0xf8, 0x08, 0xda, 0x21, 0x8d, 0x48, 0xc5, 0x40, 0xac,
+	0xd1, 0x13, 0xe8, 0x70, 0x7e, 0x44, 0x00, 0xb8, 0x3d, 0xf8, 0x78, 0x73, 0x20, 0x8e, 0x9c, 0xe0,
+	0xf2, 0x86, 0x06, 0xb0, 0x7b, 0x91, 0x93, 0xcc, 0x4e, 0xae, 0xa8, 0xf6, 0x6f, 0x0b, 0xde, 0x33,
+	0x45, 0xe6, 0xdc, 0xf4, 0x16, 0xb0, 0x23, 0x68, 0x27, 0xc1, 0xa4, 0xee, 0x49, 0xb1, 0x16, 0xb6,
+	0x38, 0x1c, 0x0b, 0x72, 0xdc, 0x16, 0x87, 0x63, 0xce, 0x33, 0xb8, 0x09, 0x58, 0x90, 0x09, 0x72,
+	0x7b, 0xb8, 0xda, 0x21, 0x15, 0x76, 0xaf, 0x83, 0x64, 0x54, 0x04, 0x23, 0xa2, 0xec, 0x88, 0x93,
+	0xd9, 0x1e, 0x99, 0xd0, 0x25, 0x7f, 0x30, 0x92, 0x44, 0xca, 0x6e, 0x7f, 0xfb, 0xa8, 0x37, 0xf8,
+	0x7c, 0x11, 0xc2, 0x52, 0x5d, 0xba, 0x25, 0xd4, 0x56, 0xc2, 0xb2, 0x29, 0xae, 0xae, 0xaa, 0x4f,
+	0xa0, 0xd7, 0x30, 0xf3, 0x46, 0x1f, 0x93, 0x69, 0xdd, 0xe8, 0x63, 0x32, 0xe5, 0x8d, 0x7e, 0x13,
+	0x5c, 0x17, 0xa4, 0x6e, 0x74, 0xb1, 0xf9, 0xaa, 0xf5, 0xa5, 0xa4, 0x3d, 0x00, 0xd4, 0x8c, 0xb1,
+	0x6e, 0x54, 0xb4, 0xff, 0x25, 0x40, 0xa7, 0x71, 0x12, 0x55, 0x73, 0xf6, 0x16, 0x28, 0x57, 0x31,
+	0xb7, 0xe7, 0xe3, 0xd9, 0x68, 0xf7, 0xf6, 0xc6, 0xc7, 0xa2, 0xb3, 0xfe, 0xb1, 0xe8, 0xbe, 0xd1,
+	0x63, 0x71, 0x6c, 0x42, 0xaf, 0x61, 0x44, 0xfb, 0x20, 0x1b, 0xa6, 0xe9, 0x5c, 0x0c, 0x3d, 0xdf,
+	0xfb, 0xe9, 0x99, 0xe5, 0xbb, 0xdf, 0xbb, 0xf2, 0x16, 0x3a, 0x04, 0x75, 0xc1, 0xfa, 0xc2, 0x32,
+	0xbf, 0x31, 0x3c, 0xff, 0x5b, 0xd7, 0x74, 0xce, 0x2c, 0x59, 0x3a, 0xfe, 0x05, 0x7a, 0x8d, 0xc7,
+	0x01, 0xbd, 0x0f, 0xef, 0x9e, 0x3b, 0x5f, 0xdb, 0x43, 0xdf, 0xf5, 0x0c, 0xef, 0xc2, 0xf5, 0x9d,
+	0xef, 0xe4, 0x2d, 0x74, 0x1f, 0x0e, 0x16, 0x8c, 0xcf, 0x0c, 0xd7, 0x75, 0x5e, 0xe0, 0x33, 0xdf,
+	0xc2, 0xd8, 0xc1, 0xb2, 0x84, 0x0e, 0xe0, 0xee, 0x82, 0x60, 0xe8, 0x78, 0xbe, 0xf5, 0xa3, 0xed,
+	0x7a, 0xae, 0xdc, 0x3a, 0x7e, 0x0c, 0xfb, 0xab, 0xe6, 0x8f, 0x67, 0xf6, 0xdc, 0xc2, 0xf6, 0x53,
+	0xdb, 0x34, 0x3c, 0xdb, 0x19, 0xfa, 0x3c, 0xa1, 0x46, 0xe6, 0xc7, 0x7f, 0x49, 0x70, 0x67, 0xe5,
+	0x3c, 0xa1, 0x3e, 0x7c, 0xb8, 0x7c, 0x93, 0x87, 0xb6, 0xfc, 0xa7, 0x86, 0x7d, 0x2e, 0x6f, 0x21,
+	0x0d, 0x0e, 0xd7, 0x29, 0x4c, 0x6c, 0x19, 0x9e, 0x25, 0x4b, 0x9b, 0x34, 0x75, 0xee, 0x83, 0xbf,
+	0x5b, 0xd0, 0xe6, 0x4d, 0x86, 0x4e, 0xa1, 0x23, 0x30, 0x21, 0x75, 0xc5, 0xc3, 0x5a, 0x35, 0x96,
+	0x7a, 0xb0, 0xf2, 0xac, 0x6c, 0x4f, 0x6d, 0x0b, 0x85, 0x20, 0xbf, 0x5a, 0x0f, 0xfa, 0x64, 0xf3,
+	0xfb, 0x51, 0x7b, 0x7e, 0xf0, 0x3a, 0xd9, 0x2c, 0xc8, 0x0f, 0x00, 0xf3, 0xd9, 0x40, 0xf7, 0x5f,
+	0x33, 0x99, 0x6a, 0x7f, 0xbd, 0xa0, 0x76, 0x79, 0xfa, 0xd9, 0xcf, 0x9f, 0x8e, 0x62, 0xf6, 0x6b,
+	0x71, 0xa9, 0x87, 0x74, 0x72, 0x52, 0xfd, 0xa7, 0xb9, 0xfc, 0x61, 0x75, 0x77, 0xf6, 0x57, 0xbe,
+	0xec, 0x8a, 0xd5, 0xa3, 0x97, 0x01, 0x00, 0x00, 0xff, 0xff, 0xd6, 0x66, 0x9b, 0xbe, 0xe8, 0x07,
+	0x00, 0x00,
 }
