@@ -6,9 +6,14 @@ option go_package = "github.com/mzmico/user-service/protobuf";
 import "mzmico/protobuf/session.proto";
 import "google/protobuf/duration.proto";
 
+enum LoginType {
+    LOGIN_TYPE_SMS = 0;
+    LOGIN_TYPE_WECHAT_JSCODE = 1;
+}
+
 enum AccountType {
-    ACCOUNT_TYPE_SMS = 0;
-    ACCOUNT_TYPE_WECHAT_JSCODE = 1;
+    ACCOUNT_TYPE_WECHAT_APP_OPENID = 0;
+    ACCOUNT_TYPE_WECHAT_APP_UNIONID = 1;
 }
 
 enum LoginStatus {
@@ -22,13 +27,16 @@ message LoginRequest {
     string app_id = 2;
     string account = 3;
     string certificate = 4;
-    AccountType type = 5;
+    LoginType type = 5;
 }
 
 message LoginResponse {
     string uid = 1;
     string token = 2;
-    LoginStatus status = 3;
+    string account = 3;
+    string certificate = 4;
+    LoginStatus status = 5;
+    AccountType type = 6;
 }
 
 
@@ -58,17 +66,12 @@ message VerificationCodeResponse {
 
 }
 
-message UserInfo {
-
-}
-
 message CreateUserRequest {
     string app_id = 1;
     mzmico.protobuf.Session session = 2;
     string name = 4;
     string nick = 5;
     string avatar = 6;
-    string language = 7;
     map<string,string> extend = 8;
 }
 
@@ -85,10 +88,21 @@ message BindAccountRequest {
     AccountType type = 6;
 }
 
+enum BindAccountState {
+    BIND_ACCOUNT_OK = 0;
+}
+
+
+message BindAccountResponse {
+    BindAccountState state = 1;
+
+}
+
 service User {
     rpc Login(LoginRequest) returns (LoginResponse) {};
     rpc VerificationCode(VerificationCodeRequest) returns (VerificationCodeResponse) {};
 
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {};
+    rpc BindAccount(BindAccountRequest) returns (BindAccountResponse) {};
 
 }

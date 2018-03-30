@@ -1,4 +1,0 @@
-[service]
-name="user-service"
-listen="0.0.0.0:20010"
-

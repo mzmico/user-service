@@ -1,16 +1,20 @@
 package main
 
 import (
-	"github.com/mzmico/mz"
-	e "github.com/mzmico/mz/http_service"
+	"fmt"
+
+	e "github.com/mzmico/mz/rpc_service"
 	_ "github.com/mzmico/user-service/impls"
 )
 
 func main() {
 
-	s := e.Default(
-		mz.WithAddress(":8020"))
+	s := e.Default()
 
-	s.Run()
+	err := s.Run()
+
+	if err != nil {
+		fmt.Println(err)
+	}
 
 }
