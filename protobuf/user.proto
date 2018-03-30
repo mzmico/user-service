@@ -9,6 +9,8 @@ import "google/protobuf/duration.proto";
 enum LoginType {
     LOGIN_TYPE_SMS = 0;
     LOGIN_TYPE_WECHAT_JSCODE = 1;
+    LOGIN_TYPE_WECHAT_APP_OPENID = 2;
+    LOGIN_TYPE_WECHAT_APP_UNIONID = 4;
 }
 
 enum AccountType {
@@ -86,16 +88,17 @@ message BindAccountRequest {
     string account = 4;
     string certificate = 5;
     AccountType type = 6;
+    bool replace = 7;
 }
 
 enum BindAccountState {
     BIND_ACCOUNT_OK = 0;
+    BIND_ACCOUNT_ALREADY_EXIST = 1;
 }
 
 
 message BindAccountResponse {
     BindAccountState state = 1;
-
 }
 
 service User {
