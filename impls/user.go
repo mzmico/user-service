@@ -78,6 +78,10 @@ func (m *ServiceUser) Login(ctx context.Context, ask *pb.LoginRequest) (ack *pb.
 	case pb.LoginType_LOGIN_TYPE_WECHAT_APP_UNIONID:
 		ack.Account = ask.Account
 		ack.Type = pb.AccountType_ACCOUNT_TYPE_WECHAT_APP_UNIONID
+	case pb.LoginType_LOGIN_TYPE_USERNAME_PASSWORD:
+		ack.Account = ask.Account
+		ack.Type = pb.AccountType_ACCOUNT_TYPE_USERNAME_PASSWORD
+
 	default:
 		return nil, state.Errorf(
 			"account type %s not support", ask.Type,
